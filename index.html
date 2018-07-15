@@ -57,15 +57,13 @@ path {
             "translate(" + margin.left + "," + margin.top + ")");
 
     // Get the data
-    d3.csv("CharFreq-Modern.csv", function(error, data) {
-        data.forEach(function(d) {
-            d.frequencyRank = +d.序列号;
-            d.cumulativePercentage = +d.累计频率;
-        });
+    d3.json("http://localhost:8080/characters?page=0&size=9933&sort=frequencyRank", function(error, json) {
+
+        if (error) return console.warn(error);
+        const data = json._embedded.characters;
 
         // Scale the range of the data
-        x.domain([0, d3.max(data,function(d) {
-            return d.frequencyRank; })]);
+        x.domain([0, d3.max(data,function(d) { return d.frequencyRank; })]);
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
 
         // Add the valueline path.
