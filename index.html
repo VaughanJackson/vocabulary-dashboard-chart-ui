@@ -10,6 +10,12 @@ path {
     fill: none;
 }
 
+.incremental {
+    stroke: steelblue;
+    stroke-width: 1px;
+    fill: steelblue;
+}
+
 .axis path,
 .axis line {
     fill: none;
@@ -42,10 +48,14 @@ path {
     const yAxis = d3.svg.axis().scale(y)
         .orient("left").ticks(10);
 
-    // Define the line
-    const valueline = d3.svg.line()
+    // Define the lines
+    const cumulativeValueLine = d3.svg.area()
         .x(function(d) { return x(d.frequencyRank); })
         .y(function(d) { return y(d.cumulativePercentage); });
+
+    const incrementalValueLine = d3.svg.line()
+        .x(function(d) { return x(d.frequencyRank); })
+        .y(function(d) { return y(d.frequencyPercentage); });
 
     // Adds the svg canvas
     const svg = d3.select("body")
@@ -61,14 +71,19 @@ path {
 
         if (error) return console.warn(error);
 
-        // Scale the range of the data
+        // Scale the range of the data - use cumulative percentage covered to scale y axis
         x.domain([0, d3.max(data,function(d) { return d.frequencyRank; })]);
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
 
-        // Add the valueline path.
-        svg.append("path")
+        // Add the valueline paths.
+        // TODO use cumulative and incremental to append labels to lines?
+        const cumulative = svg.append("path")
             .attr("class", "line")
-            .attr("d", valueline(data));
+            .attr("d", cumulativeValueLine(data))
+            .attr("id", "cumulative");
+        const incremental = svg.append("path")
+            .attr("class", "incremental")
+            .attr("d", incrementalValueLine(data));
 
         // Add the X Axis
         svg.append("g")
@@ -82,7 +97,7 @@ path {
                 "translate(" + (width/2) + " ," +
                 (height + margin.top + 10) + ")")
             .style("text-anchor", "middle")
-            .text("Frequency Rank");
+            .text("Character inverse frequency ranking");
 
         // Add the Y Axis
         svg.append("g")
@@ -96,7 +111,7 @@ path {
             .attr("x",0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Cumulative Percentage");
+            .text("Percentage of printed material covered");
 
     });
 
