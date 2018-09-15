@@ -25,6 +25,19 @@ path {
     shape-rendering: crispEdges;
 }
 
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 48px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
 </style>
 <body>
 
@@ -58,6 +71,11 @@ path {
         .x(function(d) { return x(d.frequencyRank); })
         .y(function(d) { return y(d.frequencyPercentage); });
 
+    // Define the div for the tooltip
+    const div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     // Add the svg canvas
     const svg = d3.select("body")
         .append("svg")
@@ -76,7 +94,6 @@ path {
 
     const addIncrementalLine = function(svg, data) {
         svg.append("path")
-            .attr("class", "incremental")
             .attr("d", incrementalValueLine(data))
             .attr("id", "incremental");
     };
@@ -104,7 +121,6 @@ path {
     };
 
     const labelYAxis = function(svg, margin, height, label) {
-        // text label for the y axis
         svg.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0 - margin.left)
@@ -133,6 +149,55 @@ path {
 
     };
 
+    const addCumulativeTooltips = function(svg, data) {
+        svg.selectAll("dot")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "incremental")
+            .attr("r", 0.5)
+            .attr("cx", function(d) { return x(d.frequencyRank); })
+            .attr("cy", function(d) { return y(d.cumulativePercentage); })
+            .on("mouseover", function(d) {
+                div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                div	.html(d.character + "<br/>"  + d.cumulativePercentage + "%<br/>[" + d.frequencyRank + "]")
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 18) + "px");
+            })
+            .on("mouseout", function(d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+    };
+
+    // We give the area that can be hovered over by the mouse a minimum height of 1 so that we still get tooltips
+    // for anything beyond the first few characters!
+    const addIncrementalTooltips = function(svg, data) {
+        svg.selectAll("dot")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "incremental")
+            .attr("x",function(d) { return x(d.frequencyRank); })
+            .attr("y", function(d) { return y(d.frequencyPercentage); })
+            .attr("height", function(d) { return Math.max(1, (y(0) - y(d.frequencyPercentage))); })
+            .attr("width", 1)
+            .on("mouseover", function(d) {
+                div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                div	.html(d.character + "<br/>"  + d.frequencyPercentage + "%<br/>[" + d.frequencyRank + "]")
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 18) + "px");
+            })
+            .on("mouseout", function(d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+    };
+
     // Get the data
     d3.json("http://localhost:8080/vocabulary", function(error, data) {
 
@@ -142,13 +207,17 @@ path {
         x.domain([0, d3.max(data,function(d) { return d.frequencyRank; })]);
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
 
-        addCumulativeLine(svg, data);
-        addIncrementalLine(svg, data);
         addXAxis(svg, xAxis);
         labelXAxis(svg, width, height, margin, "Character inverse frequency ranking");
         addYAxis(svg, yAxis);
         labelYAxis(svg, margin, height, "Percentage of printed material covered");
+
+        addCumulativeLine(svg, data);
+        addCumulativeTooltips(svg, data);
         labelCumulativeLine(svg, "cumulative");
+
+        addIncrementalLine(svg, data);
+        addIncrementalTooltips(svg, data);
         labelIncrementalLine(svg, "incremental");
 
     });
