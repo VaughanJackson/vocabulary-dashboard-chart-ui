@@ -76,14 +76,14 @@ path {
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
 
         // Add the valueline paths.
-        // TODO use cumulative and incremental to append labels to lines?
         const cumulative = svg.append("path")
             .attr("class", "line")
             .attr("d", cumulativeValueLine(data))
             .attr("id", "cumulative");
         const incremental = svg.append("path")
             .attr("class", "incremental")
-            .attr("d", incrementalValueLine(data));
+            .attr("d", incrementalValueLine(data))
+            .attr("id", "incremental");
 
         // Add the X Axis
         svg.append("g")
@@ -112,6 +112,22 @@ path {
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text("Percentage of printed material covered");
+
+        // text label for the cumulative line
+        svg.append("text")
+            .append("textPath")
+            .attr("startOffset", "45%")
+            .attr("baseline-shift", "80%")
+            .attr("xlink:href", "#cumulative")
+            .text("cumulative");
+
+        // text label for the incremental line
+        svg.append("text")
+            .append("textPath")
+            .attr("startOffset", "86%")
+            .attr("baseline-shift", "80%")
+            .attr("xlink:href", "#incremental")
+            .text("incremental");
 
     });
 
