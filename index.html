@@ -34,8 +34,8 @@ path {
 
     // Set the dimensions of the canvas / graph
     const margin = {top: 30, right: 20, bottom: 30, left: 50},
-        width = 600 - margin.left - margin.right,
-        height = 270 - margin.top - margin.bottom;
+          width = 600 - margin.left - margin.right,
+          height = 270 - margin.top - margin.bottom;
 
     // Set the ranges
     const x = d3.scale.linear().range([0, width]);
@@ -57,7 +57,7 @@ path {
         .x(function(d) { return x(d.frequencyRank); })
         .y(function(d) { return y(d.frequencyPercentage); });
 
-    // Adds the svg canvas
+    // Add the svg canvas
     const svg = d3.select("body")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -65,6 +65,72 @@ path {
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+
+    const addCumulativeLine = function(svg, data) {
+        svg.append("path")
+            .attr("class", "line")
+            .attr("d", cumulativeValueLine(data))
+            .attr("id", "cumulative");
+    };
+
+    const addIncrementalLine = function(svg, data) {
+        svg.append("path")
+            .attr("class", "incremental")
+            .attr("d", incrementalValueLine(data))
+            .attr("id", "incremental");
+    };
+
+    const addXAxis = function(svg, xAxis) {
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+    };
+
+    const labelXAxis = function (svg, width, height, margin, label) {
+        svg.append("text")
+            .attr("transform",
+                "translate(" + (width/2) + " ," +
+                (height + margin.top + 10) + ")")
+            .style("text-anchor", "middle")
+            .text(label);
+    };
+
+    const addYAxis = function(svg, yAxis) {
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+    };
+
+    const labelYAxis = function(svg, margin, height, label) {
+        // text label for the y axis
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x",0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text(label);
+    };
+
+    const labelCumulativeLine = function(svg, label) {
+        svg.append("text")
+            .append("textPath")
+            .attr("startOffset", "45%")
+            .attr("baseline-shift", "80%")
+            .attr("xlink:href", "#cumulative")
+            .text(label);
+    };
+
+    const labelIncrementalLine = function(svg, label) {
+        svg.append("text")
+            .append("textPath")
+            .attr("startOffset", "86%")
+            .attr("baseline-shift", "80%")
+            .attr("xlink:href", "#incremental")
+            .text(label);
+
+    };
 
     // Get the data
     d3.json("http://localhost:8080/vocabulary", function(error, data) {
@@ -75,61 +141,17 @@ path {
         x.domain([0, d3.max(data,function(d) { return d.frequencyRank; })]);
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
 
-        // Add the valueline paths.
-        const cumulative = svg.append("path")
-            .attr("class", "line")
-            .attr("d", cumulativeValueLine(data))
-            .attr("id", "cumulative");
-        const incremental = svg.append("path")
-            .attr("class", "incremental")
-            .attr("d", incrementalValueLine(data))
-            .attr("id", "incremental");
-
-        // Add the X Axis
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
-
-        // text label for the x axis
-        svg.append("text")
-            .attr("transform",
-                "translate(" + (width/2) + " ," +
-                (height + margin.top + 10) + ")")
-            .style("text-anchor", "middle")
-            .text("Character inverse frequency ranking");
-
-        // Add the Y Axis
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis);
-
-        // text label for the y axis
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left)
-            .attr("x",0 - (height / 2))
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .text("Percentage of printed material covered");
-
-        // text label for the cumulative line
-        svg.append("text")
-            .append("textPath")
-            .attr("startOffset", "45%")
-            .attr("baseline-shift", "80%")
-            .attr("xlink:href", "#cumulative")
-            .text("cumulative");
-
-        // text label for the incremental line
-        svg.append("text")
-            .append("textPath")
-            .attr("startOffset", "86%")
-            .attr("baseline-shift", "80%")
-            .attr("xlink:href", "#incremental")
-            .text("incremental");
+        addCumulativeLine(svg, data);
+        addIncrementalLine(svg, data);
+        addXAxis(svg, xAxis);
+        labelXAxis(svg, width, height, margin, "Character inverse frequency ranking");
+        addYAxis(svg, yAxis);
+        labelYAxis(svg, margin, height, "Percentage of printed material covered");
+        labelCumulativeLine(svg, "cumulative");
+        labelIncrementalLine(svg, "incremental");
 
     });
+
 
 </script>
 </body>
