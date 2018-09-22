@@ -37,6 +37,10 @@ div.tooltip {
     pointer-events: none;
 }
 
+.area {
+    fill: lightsteelblue;
+}
+
 </style>
 <body>
 
@@ -231,6 +235,12 @@ div.tooltip {
         return scaleStepValuesCalibratedToDomainValues;
     };
 
+    // define the area
+    const area = d3.svg.area()
+        .x(function(d) { return x(d.frequencyRank); })
+        .y0(height)
+        .y1(function(d) { return y(d.cumulativePercentage); });
+
     // Spectral 8 colour scale as demoed at https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d.
     const spectral8Scale = ['#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd'];
 
@@ -242,6 +252,19 @@ div.tooltip {
         // Scale the range of the data - use cumulative percentage covered to scale y axis
         x.domain([0, d3.max(data, function(d) { return d.frequencyRank; })]);
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
+
+        const cumulativeColourScale = d3.scale.linear()
+            .domain(linearSpacingAgainstScale(0, d3.max(data, function(d) { return d.cumulativePercentage; }), spectral8Scale.length))
+            .range(spectral8Scale);
+
+        // add the area
+        svg.append("path")
+            .data([data])
+            .attr("class", "area")
+            /* TODO This does not work here - need to work out how to do a separate area for each character
+                 .attr("background", cumulativeColourScale(d.cumulativePercentage))
+             */
+            .attr("d", area);
 
         addXAxis(svg, xAxis);
         labelXAxis(svg, width, height, margin, "Character inverse frequency ranking");
