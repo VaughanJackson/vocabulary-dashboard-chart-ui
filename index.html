@@ -32,7 +32,6 @@ div.tooltip {
     height: 48px;
     padding: 2px;
     font: 12px sans-serif;
-    background: lightsteelblue;
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
@@ -149,7 +148,18 @@ div.tooltip {
 
     };
 
-    const addCumulativeTooltips = function(svg, data) {
+    const addCumulativeTooltips = function(svg, data, colourScale, spacing) {
+
+        // Define colour scale for tooltip background.
+        // TODO 1. Consider using this colour scale to fill the line corresponding to each known character under the
+        // cumulative curve.
+        // TODO 2. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
+        // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
+        // first character.
+        const cumulativeColourScale = d3.scale.linear()
+            .domain(spacing(0, d3.max(data, function(d) { return d.cumulativePercentage; }), colourScale.length))
+            .range(colourScale);
+
         svg.selectAll("dot")
             .data(data)
             .enter().append("circle")
@@ -160,7 +170,8 @@ div.tooltip {
             .on("mouseover", function(d) {
                 div.transition()
                     .duration(200)
-                    .style("opacity", .9);
+                    .style("opacity", .9)
+                    .style("background", cumulativeColourScale(d.cumulativePercentage));
                 div	.html(d.character + "<br/>"  + d.cumulativePercentage + "%<br/>[" + d.frequencyRank + "]")
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 18) + "px");
@@ -174,7 +185,13 @@ div.tooltip {
 
     // We give the area that can be hovered over by the mouse a minimum height of 1 so that we still get tooltips
     // for anything beyond the first few characters!
-    const addIncrementalTooltips = function(svg, data) {
+    const addIncrementalTooltips = function(svg, data, colourScale, spacing) {
+
+        // Define colour scale for tooltip background.
+        const incrementalColourScale = d3.scale.linear()
+            .domain(spacing(d3.max(data, function(d) { return d.frequencyPercentage; }), 0, colourScale.length))
+            .range(colourScale);
+
         svg.selectAll("dot")
             .data(data)
             .enter().append("rect")
@@ -186,7 +203,8 @@ div.tooltip {
             .on("mouseover", function(d) {
                 div.transition()
                     .duration(200)
-                    .style("opacity", .9);
+                    .style("opacity", .9)
+                    .style("background", incrementalColourScale(d.frequencyPercentage));
                 div	.html(d.character + "<br/>"  + d.frequencyPercentage + "%<br/>[" + d.frequencyRank + "]")
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 18) + "px");
@@ -198,13 +216,31 @@ div.tooltip {
             });
     };
 
+    // Rebranded function linspace from https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d.
+    const linearSpacingAgainstScale = function(domainStartValue, domainEndValue, numberOfStepValuesinScale) {
+        const scaleStepValuesCalibratedToDomainValues = [];
+        const delta = (domainEndValue - domainStartValue) / (numberOfStepValuesinScale - 1);
+
+        let i = 0;
+        while(i < (numberOfStepValuesinScale - 1)) {
+            scaleStepValuesCalibratedToDomainValues.push(domainStartValue + (i * delta));
+            i++;
+        }
+
+        scaleStepValuesCalibratedToDomainValues.push(domainEndValue);
+        return scaleStepValuesCalibratedToDomainValues;
+    };
+
+    // Spectral 8 colour scale as demoed at https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d.
+    const spectral8Scale = ['#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd'];
+
     // Get the data
     d3.json("http://localhost:8080/vocabulary", function(error, data) {
 
         if (error) return console.warn(error);
 
         // Scale the range of the data - use cumulative percentage covered to scale y axis
-        x.domain([0, d3.max(data,function(d) { return d.frequencyRank; })]);
+        x.domain([0, d3.max(data, function(d) { return d.frequencyRank; })]);
         y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
 
         addXAxis(svg, xAxis);
@@ -213,11 +249,11 @@ div.tooltip {
         labelYAxis(svg, margin, height, "Percentage of printed material covered");
 
         addCumulativeLine(svg, data);
-        addCumulativeTooltips(svg, data);
+        addCumulativeTooltips(svg, data, spectral8Scale, linearSpacingAgainstScale);
         labelCumulativeLine(svg, "cumulative");
 
         addIncrementalLine(svg, data);
-        addIncrementalTooltips(svg, data);
+        addIncrementalTooltips(svg, data, spectral8Scale, linearSpacingAgainstScale);
         labelIncrementalLine(svg, "incremental");
 
     });
