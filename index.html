@@ -63,7 +63,7 @@ div.tooltip {
         .x(function(d) { return x(d.frequencyRank); })
         .y(function(d) { return y(d.cumulativePercentage); });
 
-    const incrementalValueLine = d3.svg.line()
+    const incrementalValueLine = d3.svg.area()
         .x(function(d) { return x(d.frequencyRank); })
         .y(function(d) { return y(d.frequencyPercentage); });
 
@@ -157,7 +157,7 @@ div.tooltip {
     const labelIncrementalLine = function(svg, label) {
         svg.append("text")
             .append("textPath")
-            .attr("startOffset", "86%")
+            .attr("startOffset", "43.5%")
             .attr("baseline-shift", "80%")
             .attr("xlink:href", "#incremental")
             .text(label);
