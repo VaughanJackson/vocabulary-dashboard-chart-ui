@@ -3,18 +3,11 @@
 <style> /* set the CSS */
 
 body { font: 12px Arial;}
-
-/*path {
+.path {
     stroke: steelblue;
     stroke-width: 2px;
     fill: none;
-}*/
-
-.unknown {
-    stroke: none; /* TODO try making this none once have a way to code the stroke colour. */
-    stroke-width: 0.1;
 }
-
 /* This incremental class selector IS used. IDEA is wrong! */
 .incremental {
     stroke: steelblue;
@@ -41,11 +34,6 @@ div.tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
-
-.area {
-    fill: lightsteelblue;
-}
-
 </style>
 <body>
 
@@ -95,7 +83,6 @@ div.tooltip {
 
     const addCumulativeLine = function(svg, data) {
         svg.append("path")
-            .attr("class", "line")
             .attr("d", cumulativeValueLine(data))
             .attr("id", "cumulative");
     };
@@ -157,7 +144,6 @@ div.tooltip {
 
         const line = svg.append("path")
             .attr("d", lineAccessorFunction(lineUnderCurve))
-            /*.attr("class", 'unknown')*/
             .attr("stroke", d.cumulativeColourScale(d.cumulativePercentage))
             .attr("stroke-width", 0.1)
             .attr("fill", "none")
@@ -181,9 +167,7 @@ div.tooltip {
     const addCumulativeTooltips = function(svg, data, colourScale, spacing) {
 
         // Define colour scale for tooltip background.
-        // TODO 1. Consider using this colour scale to fill the line corresponding to each known character under the
-        // cumulative curve. WIP
-        // TODO 2. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
+        // TODO 1. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
         // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
         // first character.
         const cumulativeColourScale = d3.scale.linear()
