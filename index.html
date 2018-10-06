@@ -166,17 +166,7 @@ div.tooltip {
 
     };
 
-    const addCumulativeTooltips = function(svg, characters, colourScale, spacing) {
-
-        // Define colour scale for tooltip background.
-        // TODO 1. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
-        // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
-        // first character.
-        const cumulativeColourScale = d3.scale.linear()
-            .domain(spacing(0,
-                            d3.max(characters, function(character) { return character.cumulativePercentage; }),
-                            colourScale.length))
-            .range(colourScale);
+    const addCumulativeTooltips = function(svg, characters) {
 
         svg.selectAll("dot")
             .data(characters)
@@ -189,7 +179,7 @@ div.tooltip {
                 div.transition()
                     .duration(200)
                     .style("opacity", .9)
-                    .style("background", cumulativeColourScale(character.cumulativePercentage));
+                    .style("background", character.cumulativeColourScale(character.cumulativePercentage));
                 div	.html(character.character + "<br/>"  +
                           character.cumulativePercentage + "%<br/>[" +
                           character.frequencyRank + "]")
@@ -268,11 +258,15 @@ div.tooltip {
         x.domain([0, d3.max(characters, function(character) { return character.frequencyRank; })]);
         y.domain([0, d3.max(characters, function(character) { return character.cumulativePercentage; })]);
 
+        // Define colour scale for cumulative tooltip and line under curve background.
+        // TODO 1. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
+        // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
+        // first character.
         const cumulativeColourScale = d3.scale.linear()
             .domain(linearSpacingAgainstScale(0, d3.max(characters, function(character) { return character.cumulativePercentage; }), spectral8Scale.length))
             .range(spectral8Scale);
 
-        // 'Package' the colour scale function as a character attribute, so that is then accessible
+        // 'Package' the colour scale function as a character attribute, so that it is then accessible
         // in a forEach/map callback.
         characters.forEach(function(character){ character.cumulativeColourScale = cumulativeColourScale});
 
@@ -282,7 +276,7 @@ div.tooltip {
         labelYAxis(svg, margin, height, "Percentage of printed material covered");
 
         addCumulativeCurve(svg, characters);
-        addCumulativeTooltips(svg, characters, spectral8Scale, linearSpacingAgainstScale);
+        addCumulativeTooltips(svg, characters);
         labelCumulativeCurve(svg, "cumulative");
         fillUnderCumulativeCurve(characters);
 
@@ -291,7 +285,6 @@ div.tooltip {
         labelIncrementalLine(svg, "incremental");
 
     });
-
 
 </script>
 </body>
