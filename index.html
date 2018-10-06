@@ -60,12 +60,12 @@ div.tooltip {
 
     // Define the lines
     const cumulativeValueLine = d3.svg.area()
-        .x(function(d) { return x(d.frequencyRank); })
-        .y(function(d) { return y(d.cumulativePercentage); });
+        .x(function(character) { return x(character.frequencyRank); })
+        .y(function(character) { return y(character.cumulativePercentage); });
 
     const incrementalValueLine = d3.svg.area()
-        .x(function(d) { return x(d.frequencyRank); })
-        .y(function(d) { return y(d.frequencyPercentage); });
+        .x(function(character) { return x(character.frequencyRank); })
+        .y(function(character) { return y(character.frequencyPercentage); });
 
     // Define the div for the tooltip
     const div = d3.select("body").append("div")
@@ -81,15 +81,15 @@ div.tooltip {
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-    const addCumulativeLine = function(svg, data) {
+    const addCumulativeCurve = function(svg, characters) {
         svg.append("path")
-            .attr("d", cumulativeValueLine(data))
+            .attr("d", cumulativeValueLine(characters))
             .attr("id", "cumulative");
     };
 
-    const addIncrementalLine = function(svg, data) {
+    const addIncrementalLine = function(svg, characters) {
         svg.append("path")
-            .attr("d", incrementalValueLine(data))
+            .attr("d", incrementalValueLine(characters))
             .attr("id", "incremental");
     };
 
@@ -125,7 +125,7 @@ div.tooltip {
             .text(label);
     };
 
-    const labelCumulativeLine = function(svg, label) {
+    const labelCumulativeCurve = function(svg, label) {
         svg.append("text")
             .append("textPath")
             .attr("startOffset", "45%")
@@ -134,24 +134,26 @@ div.tooltip {
             .text(label);
     };
 
-    const addLine = function(d) {
-        const lineUnderCurve = [{x:x(d.frequencyRank), y:y(0)}, {x:x(d.frequencyRank), y:y(d.cumulativePercentage)}];
+    const addLineUnderCurveForCharacter = function(character) {
+
+        const lineUnderCurve = [{ x:x(character.frequencyRank), y:y(0) },
+                                { x:x(character.frequencyRank), y:y(character.cumulativePercentage) }];
 
         const lineAccessorFunction = d3.svg.line()
-            .x(function(d) { return d.x; })
-            .y(function(d) { return d.y; })
+            .x(function(character) { return character.x; })
+            .y(function(character) { return character.y; })
             .interpolate("linear");
 
-        const line = svg.append("path")
+        svg.append("path")
             .attr("d", lineAccessorFunction(lineUnderCurve))
-            .attr("stroke", d.cumulativeColourScale(d.cumulativePercentage))
+            .attr("stroke", character.cumulativeColourScale(character.cumulativePercentage))
             .attr("stroke-width", 0.1)
             .attr("fill", "none")
     };
 
 
-    const fillUnderCumulativeLine = function(data) {
-        data.forEach(addLine);
+    const fillUnderCumulativeCurve = function(characters) {
+        characters.forEach(addLineUnderCurveForCharacter);
     };
 
     const labelIncrementalLine = function(svg, label) {
@@ -164,29 +166,33 @@ div.tooltip {
 
     };
 
-    const addCumulativeTooltips = function(svg, data, colourScale, spacing) {
+    const addCumulativeTooltips = function(svg, characters, colourScale, spacing) {
 
         // Define colour scale for tooltip background.
         // TODO 1. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
         // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
         // first character.
         const cumulativeColourScale = d3.scale.linear()
-            .domain(spacing(0, d3.max(data, function(d) { return d.cumulativePercentage; }), colourScale.length))
+            .domain(spacing(0,
+                            d3.max(characters, function(character) { return character.cumulativePercentage; }),
+                            colourScale.length))
             .range(colourScale);
 
         svg.selectAll("dot")
-            .data(data)
+            .data(characters)
             .enter().append("circle")
             .attr("class", "incremental")
             .attr("r", 0.5)
-            .attr("cx", function(d) { return x(d.frequencyRank); })
-            .attr("cy", function(d) { return y(d.cumulativePercentage); })
-            .on("mouseover", function(d) {
+            .attr("cx", function(character) { return x(character.frequencyRank); })
+            .attr("cy", function(character) { return y(character.cumulativePercentage); })
+            .on("mouseover", function(character) {
                 div.transition()
                     .duration(200)
                     .style("opacity", .9)
-                    .style("background", cumulativeColourScale(d.cumulativePercentage));
-                div	.html(d.character + "<br/>"  + d.cumulativePercentage + "%<br/>[" + d.frequencyRank + "]")
+                    .style("background", cumulativeColourScale(character.cumulativePercentage));
+                div	.html(character.character + "<br/>"  +
+                          character.cumulativePercentage + "%<br/>[" +
+                          character.frequencyRank + "]")
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 18) + "px");
             })
@@ -199,27 +205,32 @@ div.tooltip {
 
     // We give the area that can be hovered over by the mouse a minimum height of 1 so that we still get tooltips
     // for anything beyond the first few characters!
-    const addIncrementalTooltips = function(svg, data, colourScale, spacing) {
+    const addIncrementalTooltips = function(svg, characters, colourScale, spacing) {
 
         // Define colour scale for tooltip background.
         const incrementalColourScale = d3.scale.linear()
-            .domain(spacing(d3.max(data, function(d) { return d.frequencyPercentage; }), 0, colourScale.length))
+            .domain(spacing(d3.max(characters,
+                            function(character) { return character.frequencyPercentage; }),
+                            0,
+                            colourScale.length))
             .range(colourScale);
 
         svg.selectAll("dot")
-            .data(data)
+            .data(characters)
             .enter().append("rect")
             .attr("class", "incremental")
-            .attr("x",function(d) { return x(d.frequencyRank); })
-            .attr("y", function(d) { return y(d.frequencyPercentage); })
-            .attr("height", function(d) { return Math.max(1, (y(0) - y(d.frequencyPercentage))); })
+            .attr("x",function(character) { return x(character.frequencyRank); })
+            .attr("y", function(character) { return y(character.frequencyPercentage); })
+            .attr("height", function(character) { return Math.max(1, (y(0) - y(character.frequencyPercentage))); })
             .attr("width", 1)
-            .on("mouseover", function(d) {
+            .on("mouseover", function(character) {
                 div.transition()
                     .duration(200)
                     .style("opacity", .9)
-                    .style("background", incrementalColourScale(d.frequencyPercentage));
-                div	.html(d.character + "<br/>"  + d.frequencyPercentage + "%<br/>[" + d.frequencyRank + "]")
+                    .style("background", incrementalColourScale(character.frequencyPercentage));
+                div	.html(character.character + "<br/>"  +
+                          character.frequencyPercentage + "%<br/>[" +
+                          character.frequencyRank + "]")
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 18) + "px");
             })
@@ -247,42 +258,42 @@ div.tooltip {
 
     // define the area
     const area = d3.svg.area()
-        .x(function(d) { return x(d.frequencyRank); })
+        .x(function(character) { return x(character.frequencyRank); })
         .y0(height)
-        .y1(function(d) { return y(d.cumulativePercentage); });
+        .y1(function(character) { return y(character.cumulativePercentage); });
 
     // Spectral 8 colour scale as demoed at https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d.
     const spectral8Scale = ['#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd'];
 
     // Get the data
-    d3.json("http://localhost:8080/vocabulary", function(error, data) {
+    d3.json("http://localhost:8080/vocabulary", function(error, characters) {
 
         if (error) return console.warn(error);
 
         // Scale the range of the data - use cumulative percentage covered to scale y axis
-        x.domain([0, d3.max(data, function(d) { return d.frequencyRank; })]);
-        y.domain([0, d3.max(data, function(d) { return d.cumulativePercentage; })]);
+        x.domain([0, d3.max(characters, function(character) { return character.frequencyRank; })]);
+        y.domain([0, d3.max(characters, function(character) { return character.cumulativePercentage; })]);
 
         const cumulativeColourScale = d3.scale.linear()
-            .domain(linearSpacingAgainstScale(0, d3.max(data, function(d) { return d.cumulativePercentage; }), spectral8Scale.length))
+            .domain(linearSpacingAgainstScale(0, d3.max(characters, function(character) { return character.cumulativePercentage; }), spectral8Scale.length))
             .range(spectral8Scale);
 
         // 'Package' the colour scale function as a character attribute, so that is then accessible
         // in a forEach/map callback.
-        data.forEach(function(d){ d.cumulativeColourScale = cumulativeColourScale});
+        characters.forEach(function(character){ character.cumulativeColourScale = cumulativeColourScale});
 
         addXAxis(svg, xAxis);
         labelXAxis(svg, width, height, margin, "Character inverse frequency ranking");
         addYAxis(svg, yAxis);
         labelYAxis(svg, margin, height, "Percentage of printed material covered");
 
-        addCumulativeLine(svg, data);
-        addCumulativeTooltips(svg, data, spectral8Scale, linearSpacingAgainstScale);
-        labelCumulativeLine(svg, "cumulative");
-        fillUnderCumulativeLine(data);
+        addCumulativeCurve(svg, characters);
+        addCumulativeTooltips(svg, characters, spectral8Scale, linearSpacingAgainstScale);
+        labelCumulativeCurve(svg, "cumulative");
+        fillUnderCumulativeCurve(characters);
 
-        addIncrementalLine(svg, data);
-        addIncrementalTooltips(svg, data, spectral8Scale, linearSpacingAgainstScale);
+        addIncrementalLine(svg, characters);
+        addIncrementalTooltips(svg, characters, spectral8Scale, linearSpacingAgainstScale);
         labelIncrementalLine(svg, "incremental");
 
     });
