@@ -149,15 +149,16 @@ function vocabularyChart() {
 
         characters.svg.append("path")
             .attr("d", lineAccessorFunction(lineUnderCurve))
-            .attr("stroke", character.cumulativeColourScale(character.cumulativePercentage))
+            .attr("stroke", characters.cumulativeColourScale(character.cumulativePercentage))
             .attr("stroke-width", 0.1)
             .attr("fill", "none")
     };
 
 
-    const fillUnderCumulativeCurve = function (svg, characters) {
-        // 'Package' the svg element reference as a characters attribute, so that it is then accessible
+    const fillUnderCumulativeCurve = function (svg, characters, cumulativeColourScale) {
+        // 'Package' the svg element and colour scale references as characters attributes, so they are then accessible
         // in a forEach/map callback.
+        characters.cumulativeColourScale = cumulativeColourScale;
         characters.svg = svg;
         characters.forEach(addLineUnderCurveForCharacter);
     };
@@ -189,7 +190,7 @@ function vocabularyChart() {
                 div.transition()
                     .duration(200)
                     .style("opacity", .9)
-                    .style("background", character.cumulativeColourScale(character.cumulativePercentage));
+                    .style("background", characters.cumulativeColourScale(character.cumulativePercentage));
                 div.html(character.character + "<br/>" +
                     character.cumulativePercentage + "%<br/>[" +
                     character.frequencyRank + "]")
@@ -302,14 +303,6 @@ function vocabularyChart() {
                 }), spectral8Scale.length))
                 .range(spectral8Scale);
 
-            // 'Package' the colour scale function as a character attribute, so that it is then accessible
-            // in a forEach/map callback.
-            // TODO Consider packaging this reference on the characters array as I have done above, so we don't have
-            // a wasteful iteration here?
-            characters.forEach(function (character) {
-                character.cumulativeColourScale = cumulativeColourScale
-            });
-
             addXAxis(svg, xAxis);
             labelXAxis(svg, width, height, margin, "Character inverse frequency ranking");
             addYAxis(svg, yAxis);
@@ -318,7 +311,7 @@ function vocabularyChart() {
             addCumulativeCurve(svg, characters);
             addCumulativeTooltips(svg, div, characters);
             labelCumulativeCurve(svg, "cumulative");
-            fillUnderCumulativeCurve(svg, characters);
+            fillUnderCumulativeCurve(svg, characters, cumulativeColourScale);
 
             addIncrementalLine(svg, characters);
             addIncrementalTooltips(svg, div, characters, spectral8Scale, linearSpacingAgainstScale);
