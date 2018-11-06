@@ -42,40 +42,50 @@ div.tooltip {
 
 <script>
 
-function vocabularyChart() {
+const vocabularyChart = function() {
 
-    // Set the dimensions of the canvas / graph
+    // Set the default dimensions of the canvas / graph
     // Uses the Margin Convention https://bl.ocks.org/mbostock/3019563
-    const margin = {top: 30, right: 20, bottom: 30, left: 50},
-        width = 600 - margin.left - margin.right,
-        height = 270 - margin.top - margin.bottom;
+    var width = 600; // default width
+    var height = 270; // default height
+    var margin = {top: 30, right: 20, bottom: 30, left: 50}; // default margin
 
-    // Set the ranges
-    const x = d3.scale.linear().range([0, width]);
-    const y = d3.scale.linear().range([height, 0]);
+    // Derived attributes
+    var graphWidth, xRange, xAxis;
+    var graphHeight, yRange, yAxis;
 
-    // Define the axes
-    const xAxis = d3.svg.axis().scale(x)
-        .orient("bottom").ticks(10);
+    const deriveXAxis = function(width, margin) {
+        graphWidth = width - margin.left - margin.right;
+        xRange = d3.scale.linear().range([0, graphWidth]);
+        xAxis = d3.svg.axis().scale(xRange)
+                  .orient("bottom").ticks(10);
+    };
 
-    const yAxis = d3.svg.axis().scale(y)
-        .orient("left").ticks(10);
+    const deriveYAxis = function(height, margin) {
+        graphHeight = height - margin.top - margin.bottom;
+        yRange = d3.scale.linear().range([graphHeight, 0]);
+        yAxis = d3.svg.axis().scale(yRange)
+                  .orient("left").ticks(10);
+    };
+
+    deriveXAxis(width, margin);
+    deriveYAxis(height, margin);
 
     // Define the lines
     const cumulativeValueLine = d3.svg.area()
         .x(function (character) {
-            return x(character.frequencyRank);
+            return xRange(character.frequencyRank);
         })
         .y(function (character) {
-            return y(character.cumulativePercentage);
+            return yRange(character.cumulativePercentage);
         });
 
     const incrementalValueLine = d3.svg.area()
         .x(function (character) {
-            return x(character.frequencyRank);
+            return xRange(character.frequencyRank);
         })
         .y(function (character) {
-            return y(character.frequencyPercentage);
+            return yRange(character.frequencyPercentage);
         });
 
     const addCumulativeCurve = function (svg, characters) {
@@ -93,7 +103,7 @@ function vocabularyChart() {
     const addXAxis = function (svg, xAxis) {
         svg.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
+            .attr("transform", "translate(0," + graphHeight + ")")
             .call(xAxis);
     };
 
@@ -135,8 +145,8 @@ function vocabularyChart() {
     // get a reference to svg passed to it as part of invocation through forEach.
     const addLineUnderCurveForCharacter = function (character, index, characters) {
 
-        const lineUnderCurve = [{x: x(character.frequencyRank), y: y(0)},
-            {x: x(character.frequencyRank), y: y(character.cumulativePercentage)}];
+        const lineUnderCurve = [{x: xRange(character.frequencyRank), y: yRange(0)},
+            {x: xRange(character.frequencyRank), y: yRange(character.cumulativePercentage)}];
 
         const lineAccessorFunction = d3.svg.line()
             .x(function (character) {
@@ -153,7 +163,6 @@ function vocabularyChart() {
             .attr("stroke-width", 0.1)
             .attr("fill", "none")
     };
-
 
     const fillUnderCumulativeCurve = function (svg, characters, cumulativeColourScale) {
         // 'Package' the svg element and colour scale references as characters attributes, so they are then accessible
@@ -181,10 +190,10 @@ function vocabularyChart() {
             .attr("class", "incremental")
             .attr("r", 0.5)
             .attr("cx", function (character) {
-                return x(character.frequencyRank);
+                return xRange(character.frequencyRank);
             })
             .attr("cy", function (character) {
-                return y(character.cumulativePercentage);
+                return yRange(character.cumulativePercentage);
             })
             .on("mouseover", function (character) {
                 div.transition()
@@ -223,13 +232,13 @@ function vocabularyChart() {
             .enter().append("rect")
             .attr("class", "incremental")
             .attr("x", function (character) {
-                return x(character.frequencyRank);
+                return xRange(character.frequencyRank);
             })
             .attr("y", function (character) {
-                return y(character.frequencyPercentage);
+                return yRange(character.frequencyPercentage);
             })
             .attr("height", function (character) {
-                return Math.max(1, (y(0) - y(character.frequencyPercentage)));
+                return Math.max(1, (yRange(0) - yRange(character.frequencyPercentage)));
             })
             .attr("width", 1)
             .on("mouseover", function (character) {
@@ -279,17 +288,17 @@ function vocabularyChart() {
         // Add the svg canvas
         const svg = selection
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom + 30)
+            .attr("width", graphWidth + margin.left + margin.right)
+            .attr("height", graphHeight + margin.top + margin.bottom + 30)
             .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
             // Scale the range of the data - use cumulative percentage covered to scale y axis
-            x.domain([0, d3.max(characters, function (character) {
+            xRange.domain([0, d3.max(characters, function (character) {
                 return character.frequencyRank;
             })]);
-            y.domain([0, d3.max(characters, function (character) {
+            yRange.domain([0, d3.max(characters, function (character) {
                 return character.cumulativePercentage;
             })]);
 
@@ -304,9 +313,9 @@ function vocabularyChart() {
                 .range(spectral8Scale);
 
             addXAxis(svg, xAxis);
-            labelXAxis(svg, width, height, margin, "Character inverse frequency ranking");
+            labelXAxis(svg, graphWidth, graphHeight, margin, "Character inverse frequency ranking");
             addYAxis(svg, yAxis);
-            labelYAxis(svg, margin, height, "Percentage of printed material covered");
+            labelYAxis(svg, margin, graphHeight, "Percentage of printed material covered");
 
             addCumulativeCurve(svg, characters);
             addCumulativeTooltips(svg, div, characters);
@@ -319,10 +328,37 @@ function vocabularyChart() {
 
     };
 
-    return implementation;
-}
+    implementation.margin = function(value) {
+        if (!arguments.length) return width;
+        margin = value;
+        // Axes must be recalculated
+        deriveXAxis(width, margin);
+        deriveYAxis(height, margin);
+        return implementation;
+    };
 
-const chart = vocabularyChart();
+    implementation.width = function(value) {
+        if (!arguments.length) return width;
+        width = value;
+        // xAxis must be recalculated
+        deriveXAxis(width, margin);
+        return implementation;
+    };
+
+    implementation.height = function(value) {
+        if (!arguments.length) return height;
+        height = value;
+        // yAxis must be recalculated
+        deriveYAxis(height, margin);
+        return implementation;
+    };
+
+    return implementation;
+};
+
+const chart = vocabularyChart().margin({top: 300, right: 20, bottom: 200, left: 50})
+                               .height(800)
+                               .width(1600);
 // Get the data
 d3.json("http://localhost:8080/vocabulary", function (error, characters) {
 
