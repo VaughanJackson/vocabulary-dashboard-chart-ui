@@ -1,0 +1,11 @@
+{
+  "name": "vocabulary-dashboard-chart-ui",
+  "version": "1.0.0",
+  "main": "index.html",
+  "repository": "https://VaughanJackson@bitbucket.org/VaughanJackson/vocabulary-dashboard-chart-ui.git",
+  "author": "VaughanJackson <vaughanjackson2001@yahoo.com>",
+  "license": "MIT",
+  "dependencies": {
+    "d3": "=3.0.0"
+  }
+}
