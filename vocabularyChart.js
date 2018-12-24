@@ -12,27 +12,25 @@ const vocabularyChart = () => {
 
     const deriveXAxis = (width, margin) => {
         graphWidth = width - margin.left - margin.right;
-        xRange = d3.scale.linear().range([0, graphWidth]);
-        xAxis = d3.svg.axis().scale(xRange)
-            .orient("bottom").ticks(10);
+        xRange = d3.scaleLinear().range([0, graphWidth]);
+        xAxis = d3.axisBottom().scale(xRange).ticks(10);
     };
 
     const deriveYAxis = (height, margin) => {
         graphHeight = height - margin.top - margin.bottom;
-        yRange = d3.scale.linear().range([graphHeight, 0]);
-        yAxis = d3.svg.axis().scale(yRange)
-            .orient("left").ticks(10);
+        yRange = d3.scaleLinear().range([graphHeight, 0]);
+        yAxis = d3.axisLeft().scale(yRange).ticks(10);
     };
 
     deriveXAxis(width, margin);
     deriveYAxis(height, margin);
 
     // Define the lines
-    const cumulativeValueLine = d3.svg.area()
+    const cumulativeValueLine = d3.area()
         .x(character => xRange(character.frequencyRank))
         .y(character  => yRange(character.cumulativePercentage));
 
-    const incrementalValueLine = d3.svg.area()
+    const incrementalValueLine = d3.area()
         .x(character => xRange(character.frequencyRank))
         .y(character => yRange(character.frequencyPercentage));
 
@@ -89,10 +87,10 @@ const vocabularyChart = () => {
         const lineUnderCurve = [{x: xRange(character.frequencyRank), y: yRange(0)},
             {x: xRange(character.frequencyRank), y: yRange(character.cumulativePercentage)}];
 
-        const lineAccessorFunction = d3.svg.line()
+        const lineAccessorFunction = d3.line()
             .x(character => character.x)
             .y(character => character.y)
-            .interpolate("linear");
+            .curve(d3.curveLinear);
 
         characters.svg.append("path")
             .attr("d", lineAccessorFunction(lineUnderCurve))
@@ -144,7 +142,7 @@ const vocabularyChart = () => {
     const addIncrementalTooltips = (svg, div, characters, colourScale, spacing) => {
 
         // Define colour scale for tooltip background.
-        const incrementalColourScale = d3.scale.linear()
+        const incrementalColourScale = d3.scaleLinear()
             .domain(spacing(d3.max(characters, character => character.frequencyPercentage), 0, colourScale.length))
             .range(colourScale);
 
@@ -213,7 +211,7 @@ const vocabularyChart = () => {
         // TODO 1. Consider using this colour scale to represent a user's progress - they get the tooltip as some kind
         // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
         // first character.
-        const cumulativeColourScale = d3.scale.linear()
+        const cumulativeColourScale = d3.scaleLinear()
             .domain(linearSpacingAgainstScale(0, d3.max(characters, character => character.cumulativePercentage), spectral8Scale.length))
             .range(spectral8Scale);
 
@@ -267,11 +265,11 @@ const vocabularyChart = () => {
 const chart = vocabularyChart().margin({top: 300, right: 20, bottom: 200, left: 50})
     .height(800)
     .width(1600);
+
 // Get the data
-d3.json("http://localhost:8080/vocabulary", (error, characters) => {
-
-    if (error) return console.warn(error);
-
-    d3.select("body")
-        .call(chart, characters);
+d3.json("http://localhost:8080/vocabulary").then((characters) => {
+    return d3.select("body")
+             .call(chart, characters);
+}).catch((error) => {
+   return console.log(error);
 });

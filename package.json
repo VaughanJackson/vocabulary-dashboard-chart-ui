@@ -6,6 +6,6 @@
   "author": "VaughanJackson <vaughanjackson2001@yahoo.com>",
   "license": "MIT",
   "dependencies": {
-    "d3": "=3.0.0"
+    "d3": "=5.7.0"
   }
 }
