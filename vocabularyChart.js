@@ -2,13 +2,13 @@ const vocabularyChart = () => {
 
     // Set the default dimensions of the canvas / graph
     // Uses the Margin Convention https://bl.ocks.org/mbostock/3019563
-    var width = 600; // default width
-    var height = 270; // default height
-    var margin = {top: 30, right: 20, bottom: 30, left: 50}; // default margin
+    let width = 600; // default width
+    let height = 270; // default height
+    let margin = {top: 30, right: 20, bottom: 30, left: 50}; // default margin
 
     // Derived attributes
-    var graphWidth, xRange, xAxis;
-    var graphHeight, yRange, yAxis;
+    let graphWidth, xRange, xAxis;
+    let graphHeight, yRange, yAxis;
 
     const deriveXAxis = (width, margin) => {
         graphWidth = width - margin.left - margin.right;
