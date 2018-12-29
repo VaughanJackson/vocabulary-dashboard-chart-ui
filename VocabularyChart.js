@@ -231,7 +231,7 @@ export default class {
             this.labelIncrementalLine(svg, "incremental");
         };
 
-        this.margin = (value) => {
+        this.setMargin = (value) => {
             this.margin = value;
             // Axes must be recalculated
             this.deriveXAxis(this.width, this.margin);
@@ -241,7 +241,7 @@ export default class {
 
         this.getMargin = () => this.margin;
 
-        this.width = (value) => {
+        this.setWidth = (value) => {
             this.width = value;
             // xAxis must be recalculated
             this.deriveXAxis(this.width, this.margin);
@@ -250,7 +250,7 @@ export default class {
 
         this.getWidth = () => this.width;
 
-        this.height = (value,) => {
+        this.setHeight = (value,) => {
             this.height = value;
             // yAxis must be recalculated
             this.deriveYAxis(this.height, this.margin);

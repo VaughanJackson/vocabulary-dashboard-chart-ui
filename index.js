@@ -1,7 +1,7 @@
 import VocabularyChart from './VocabularyChart.js';
-const chart = new VocabularyChart().margin({top: 300, right: 20, bottom: 200, left: 50})
-    .height(800)
-    .width(1600);
+const chart = new VocabularyChart().setMargin({top: 300, right: 20, bottom: 200, left: 50})
+                                   .setHeight(800)
+                                   .setWidth(1600);
 
 // Get the data
 d3.json("http://localhost:8080/vocabulary").then((characters) => {
