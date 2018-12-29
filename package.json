@@ -6,6 +6,26 @@
   "author": "VaughanJackson <vaughanjackson2001@yahoo.com>",
   "license": "MIT",
   "dependencies": {
-    "d3": "=5.7.0"
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "d3": "=5.7.0",
+    "jest-cli": "^23.6.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "d3": "=5.7.0",
+    "jest": "^23.6.0"
+  },
+  "scripts": {
+    "test": "jest --config=./jest.config.json --watch"
+  },
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      "^.+\\.jsx$": "babel-jest"
+    }
   }
 }
