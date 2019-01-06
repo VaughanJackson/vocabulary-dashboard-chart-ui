@@ -1,17 +1,39 @@
 # `vocabulary-dashboard-chart-ui`
 
-## Running 
+## Clone Project
 
-```
-yarn install
-http-server
+```text
+git clone https://VaughanJackson@bitbucket.org/VaughanJackson/vocabulary-dashboard-chart-ui.git
 ```
 
-## Unit Testing
+## Set Up Project
 
 ```text
 yarn install
+```
+
+## Start The Application
+
+```text
+http-server
+```
+
+This assumes:
+ 1. you have `http-server` (https://www.npmjs.com/package/http-server) installed
+ 2. you have a vocabulary server running locally with its endpoint at `http://localhost:8080/vocabulary`.
+
+## Unit Test
+
+To set up unit tests that are executed as soon as you make changes, enter the following commands.
+
+```text
 yarn test
+```
+
+To execute the project unit tests once only, enter these commands.
+
+```text
+jest
 ```
 
 ## Integration Testing, Automated End to End Testing
