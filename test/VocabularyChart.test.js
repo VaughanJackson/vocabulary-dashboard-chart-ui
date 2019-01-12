@@ -4,9 +4,13 @@ global.d3 = d3;
 
 import VocabularyChart from '../VocabularyChart.js';
 
-test('Constructor sets initial values', () => {
-    const chart = new VocabularyChart();
-    expect(chart.getWidth()).toBe(600);
-    expect(chart.getHeight()).toBe(270);
-    expect(chart.getMargin()).toEqual({top: 30, right: 20, bottom: 30, left: 50});
+describe('Constructor', function() {
+
+    it('Sets initial values', () => {
+        const chart = new VocabularyChart();
+        expect(chart.getWidth()).toBe(600);
+        expect(chart.getHeight()).toBe(270);
+        expect(chart.getMargin()).toEqual({top: 30, right: 20, bottom: 30, left: 50});
+    });
+
 });
