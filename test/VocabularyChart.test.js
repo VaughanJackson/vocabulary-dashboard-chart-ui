@@ -3,14 +3,16 @@ import * as d3 from "d3";
 global.d3 = d3;
 
 import VocabularyChart from '../VocabularyChart.js';
+import {DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_MARGIN, SPECTRAL_8_SCALE} from '../VocabularyChart.js';
 
 describe('Constructor', function() {
 
     it('Sets initial values', () => {
         const chart = new VocabularyChart();
-        expect(chart.getWidth()).toBe(600);
-        expect(chart.getHeight()).toBe(270);
-        expect(chart.getMargin()).toEqual({top: 30, right: 20, bottom: 30, left: 50});
+        expect(chart.getWidth()).toBe(DEFAULT_WIDTH);
+        expect(chart.getHeight()).toBe(DEFAULT_HEIGHT);
+        expect(chart.getMargin()).toEqual(DEFAULT_MARGIN);
+        expect(chart.getColourScale()).toBe(SPECTRAL_8_SCALE);
     });
 
 });

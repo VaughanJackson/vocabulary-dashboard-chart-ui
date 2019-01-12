@@ -1,12 +1,24 @@
+
+// Spectral 8 colour scale as demoed at https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d.
+export const SPECTRAL_8_SCALE = ['#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd'];
+export const DEFAULT_WIDTH = 600;
+export const DEFAULT_HEIGHT = 270;
+export const DEFAULT_MARGIN = {top: 30, right: 20, bottom: 30, left: 50};
+
 export default class {
 
     constructor() {
 
         // Set the default dimensions of the canvas / graph
         // Uses the Margin Convention https://bl.ocks.org/mbostock/3019563
-        this.width = 600; // default width
-        this.height = 270; // default height
-        this.margin = {top: 30, right: 20, bottom: 30, left: 50}; // default margin
+        this.width = DEFAULT_WIDTH;
+        this.height = DEFAULT_HEIGHT;
+        this.margin = DEFAULT_MARGIN;
+        // Derived attributes
+        this.graphWidth = this.xRange = this.xAxis = 0;
+        this.graphHeight = this.yRange = this.yAxis = 0;
+
+        this.colourScale = SPECTRAL_8_SCALE;
 
         this.deriveXAxis = (width, margin) => {
             this.graphWidth = width - margin.left - margin.right;
@@ -20,9 +32,6 @@ export default class {
             this.yAxis = d3.axisLeft().scale(this.yRange).ticks(10);
         };
 
-        // Derived attributes
-        this.graphWidth = 0, this.xRange = 0, this.xAxis = 0;
-        this.graphHeight = 0, this.yRange = 0, this.yAxis = 0;
         this.deriveXAxis(this.width, this.margin);
         this.deriveYAxis(this.height, this.margin);
 
@@ -184,9 +193,6 @@ export default class {
             return scaleStepValuesCalibratedToDomainValues;
         };
 
-        // Spectral 8 colour scale as demoed at https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d.
-        this.spectral8Scale = ['#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd'];
-
         // TODO called 'my' in https://bost.ocks.org/mike/chart/ - is 'draw' any better?
         this.draw = (selection, characters) => {
 
@@ -213,8 +219,8 @@ export default class {
             // of badge corresponding to the highest frequencyRank character that they know in an unbroken sequence from the
             // first character.
             const cumulativeColourScale = d3.scaleLinear()
-                .domain(this.linearSpacingAgainstScale(0, d3.max(characters, character => character.cumulativePercentage), this.spectral8Scale.length))
-                .range(this.spectral8Scale);
+                .domain(this.linearSpacingAgainstScale(0, d3.max(characters, character => character.cumulativePercentage), this.colourScale.length))
+                .range(this.colourScale);
 
             this.addXAxis(svg, this.xAxis);
             this.labelXAxis(svg, this.graphWidth, this.graphHeight, this.margin, "Character inverse frequency ranking");
@@ -227,7 +233,7 @@ export default class {
             this.fillUnderCumulativeCurve(svg, characters, cumulativeColourScale);
 
             this.addIncrementalLine(svg, characters);
-            this.addIncrementalTooltips(svg, div, characters, this.spectral8Scale, this.linearSpacingAgainstScale);
+            this.addIncrementalTooltips(svg, div, characters, this.colourScale, this.linearSpacingAgainstScale);
             this.labelIncrementalLine(svg, "incremental");
         };
 
@@ -258,6 +264,13 @@ export default class {
         };
 
         this.getHeight = () => this.height;
+
+        this.setColourScale = (value,) => {
+            this.colourScale = value;
+            return this;
+        };
+
+        this.getColourScale = () => this.colourScale;
     }
 
 }
