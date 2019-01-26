@@ -1,4 +1,5 @@
-import {VocabularyChart, VIRIDIS_SCALE} from './VocabularyChart.js';
+import VocabularyChart from './VocabularyChart.js';
+import VIRIDIS_SCALE from './VocabularyChart.js';
 const chart = new VocabularyChart().setMargin({top: 300, right: 20, bottom: 200, left: 50})
                                    .setHeight(800)
                                    .setWidth(1600)
