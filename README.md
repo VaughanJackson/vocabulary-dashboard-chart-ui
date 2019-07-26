@@ -3,7 +3,7 @@
 ## Clone Project
 
 ```text
-git clone https://VaughanJackson@bitbucket.org/VaughanJackson/vocabulary-dashboard-chart-ui.git
+git clone https://github.com/VaughanJackson/vocabulary-dashboard-chart-ui.git
 ```
 
 ## Set Up Project
